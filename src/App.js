@@ -1,23 +1,32 @@
-import logo from './logo.svg';
 import './App.css';
-
+import { io } from 'socket.io-client';
+import {useEffect, useState} from 'react';
+import MatchTable from './components/match-table.component';
 function App() {
+  
+  const [matchData, setMatchData] = useState([]);
+  useEffect(() => {
+    const socket = io('https://mst-full-stack-dev-test.herokuapp.com/');
+
+    socket.on("connect_error", () => {
+      setTimeout(() => {
+        console.log('Connection failed')
+        socket.connect();
+      }, 1000);
+    });
+
+    socket.on('data-update', (data) => {
+      setMatchData(matchData => [...matchData, data]);
+    })
+ 
+    return () => {
+      socket.disconnect();
+    }
+  }, [])
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <MatchTable matchData={matchData}/>
     </div>
   );
 }
